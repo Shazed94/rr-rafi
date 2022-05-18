@@ -1,83 +1,133 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // import { InputLabel } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Breadcrumb, Button, Col, Form, Row } from "react-bootstrap";
 import axios from "axios";
+import JoditEditor from "jodit-react";
+import { BACKEND_BASE_URL } from "../../../../Components/globalVariables.js";
+import Swal from "sweetalert2";
 // import ImageUploading from "react-images-uploading";
 
-const AddImage = () => {
-  const imageTitle = useRef();
+const config = {
+  buttons: [
+    "bold",
+    "strikethrough",
+    "underline",
+    "italic",
+    "|",
+    "ul",
+    "ol",
+    "|",
+    "outdent",
+    "indent",
+    "|",
+    "font",
+    "fontsize",
+    "brush",
+    "paragraph",
+    "|",
+    "table",
+    "link",
+    "|",
+    "align",
+    "undo",
+    "redo",
+    "|",
+    "symbol",
+  ],
+};
+
+const EditImage = () => {
   const imageDesc = useRef();
-  //   const imageLink = useRef();
+  const { id } = useParams();
+
+  // const [imageGalleryInfo, setImageGalleryInfo] = useState({});
+
+  const [title, setTitle] = useState();
+  const [description, setDescription] = useState();
+  const [imageLink, setImageLink] = useState();
 
   const [userInfo, setuserInfo] = useState({
     file: [],
-    // filepreview: null,
   });
 
   const handleInputChange = (event) => {
     setuserInfo({
       ...userInfo,
       file: event.target.files[0],
-      title: event.target.title,
-      // filepreview: URL.createObjectURL(event.target.files[0]),
     });
   };
 
-  const handleImageGallery = (e) => {
-    const title = imageTitle.current.value;
+  const fetchImage = async () => {
+    await axios
+      .get(`${BACKEND_BASE_URL}/api/v1/admin/photo-gallery/${id}/edit`)
+      .then((data) => {
+        console.log(data);
+        const { title, description, image } = data.data.single_photo;
+        setTitle(title);
+        setDescription(description);
+        setImageLink(image);
+      });
+  };
+  useEffect(() => {
+    fetchImage();
+  }, []);
+  // console.log("Title", imageGalleryInfo);
+
+  const updateImageGallery = (e) => {
+    // const title = imageTitle.current.value;
     const description = imageDesc.current.value;
-    // const image = imageLink.current.files[0];
 
     const formdata = new FormData();
+    formdata.append("_method", "PUT");
     formdata.append("image", userInfo.file);
     formdata.append("title", title);
     formdata.append("description", description);
-
-    // console.log(image);
-
-    // const imageData = { title, image, description };
-    // console.log(imageData);
-
+    // console.log(formdata);
     axios
       .post(
-        "https://rrkabel.trodad.com/api/v1/admin/photo-gallery/store",
+        `${BACKEND_BASE_URL}/api/v1/admin/photo-gallery/${id}/update`,
         formdata,
         {
           headers: { "Content-Type": "multipart/form-data" },
         }
       )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        // if (data.insertedId) {
-        //   alert('data added successfully')
-        //   e.target.reset();
-        // }
+
+      .then((response) => {
+        Swal.fire({
+          icon: "success",
+          text: response.data.message,
+          confirmButtonColor: "#5eba86",
+        });
+        fetchImage();
       });
 
-    // console.log(newUser);
     e.preventDefault();
   };
 
   return (
     <div className="page-wrapper">
-      <Breadcrumb className="breadcrumb-wrapper">
-        <Breadcrumb.Item as={Link} to="admin" className="breadcrumb-item">
-          Dashboard
-        </Breadcrumb.Item>
+      <div className="breadcrumb-wrapper d-flex">
+        <Breadcrumb>
+          <Breadcrumb.Item as={Link} to="admin" className="breadcrumb-item">
+            Dashboard
+          </Breadcrumb.Item>
 
-        <Breadcrumb.Item active>Upload Image</Breadcrumb.Item>
-      </Breadcrumb>
+          <Breadcrumb.Item active>Edit Image</Breadcrumb.Item>
+        </Breadcrumb>
+        <div className="ms-auto breadcrumb-item">
+          <Link to="/admin/AllImage">All Image</Link>
+        </div>
+      </div>
 
       <div className="admin-card">
         <div className="admin-card-body">
           <div>
             <div className="mt-5">
-              <Form onSubmit={handleImageGallery}>
+              <Form onSubmit={updateImageGallery}>
                 <span className="top-border"></span>
                 <div className="form-header py-2">
-                  <h5 className="form-title">Upload Image</h5>
+                  <h5 className="form-title">Edit Image</h5>
                   <hr />
                 </div>
                 <Row className="mb-3">
@@ -94,7 +144,12 @@ const AddImage = () => {
                       required
                       type="text"
                       placeholder="image title"
-                      ref={imageTitle}
+                      // value={imageGalleryInfo.title}
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                      }}
+                      // ref={imageTitle}
                     />
                     <Form.Control.Feedback type="invalid">
                       Please choose an image
@@ -119,6 +174,12 @@ const AddImage = () => {
                       name="upload_file"
                       onChange={handleInputChange}
                     />
+                    <img
+                      width={80}
+                      height={50}
+                      src={`${BACKEND_BASE_URL}${imageLink}`}
+                      alt={title}
+                    />
 
                     <Form.Control.Feedback type="invalid">
                       Please choose an image
@@ -134,7 +195,17 @@ const AddImage = () => {
                     <Form.Label className="label-title fw-bold">
                       Description
                     </Form.Label>
-                    <Form.Control as="textarea" rows={5} ref={imageDesc} />
+                    <JoditEditor
+                      ref={imageDesc}
+                      config={config}
+                      tabIndex={1}
+                      // value={imageGalleryInfo.description}
+                      value={description}
+                      // onChange={(e)=>{
+                      //   setDescription(e.target.value);
+                      // }}
+                    />
+                    {/* <Form.Control as="textarea" rows={5} ref={imageDesc} /> */}
                   </Form.Group>
                 </Row>
 
@@ -142,15 +213,19 @@ const AddImage = () => {
                   type="submit"
                   className="btn-submit mt-5 rounded-3 border-0 d-flex justify-content-center"
                 >
-                  Submit
+                  Update
                 </Button>
               </Form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* <JoditEditor onKeyUp={textInputChange} />
+      <br /> */}
+      {/* <div>{Parcer(value)}</div> */}
     </div>
   );
 };
 
-export default AddImage;
+export default EditImage;

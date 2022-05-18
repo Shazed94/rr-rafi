@@ -20,11 +20,11 @@
     "react-data-table-component": "^7.5.2",
     "react-dom": "^18.1.0",
     "react-html-parser": "^2.0.2",
-    "react-images-upload": "^1.2.8",
-    "react-images-uploading": "^3.1.6",
+    "react-player": "^2.10.1",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "styled-components": "^5.3.5",
+    "sweetalert2": "^11.4.14",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

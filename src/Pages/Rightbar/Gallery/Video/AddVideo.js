@@ -1,20 +1,47 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 // import { InputLabel } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Breadcrumb, Button, Col, Form, Row } from "react-bootstrap";
+import JoditEditor from "jodit-react";
+import Swal from "sweetalert2";
+import axios from "axios";
+import { BACKEND_BASE_URL } from "../../../../Components/globalVariables";
+
+const config = {
+  buttons: [
+    "bold",
+    "strikethrough",
+    "underline",
+    "italic",
+    "|",
+    "ul",
+    "ol",
+    "|",
+    "outdent",
+    "indent",
+    "|",
+    "font",
+    "fontsize",
+    "brush",
+    "paragraph",
+    "|",
+    "table",
+    "link",
+    "|",
+    "align",
+    "undo",
+    "redo",
+    "|",
+    "symbol",
+  ],
+};
 
 const AddVideo = () => {
-  // const onSubmit = (e) => {
-  //   console.log(e);
-  //   e.preventDefault();
-
-  //   const form = e.currentTarget;
-  //   console.log("Form",form);
-  // };
-
   const videoTitle = useRef();
   const videoLink = useRef();
   const videoDesc = useRef();
+
+  const [descValue, setDescValue] = useState();
 
   const handleVideoGallery = (e) => {
     const title = videoTitle.current.value;
@@ -25,20 +52,23 @@ const AddVideo = () => {
 
     const videoData = { title, video, description };
 
-    fetch("https://rrkabel.trodad.com/api/v1/admin/video-gallery/store", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(videoData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        // if (data.insertedId) {
-        //   alert('data added successfully')
-        //   e.target.reset();
-        // }
+    axios
+      .post(`${BACKEND_BASE_URL}/api/v1/admin/video-gallery/store`, videoData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        if (response.data.status === 200) {
+          Swal.fire({
+            icon: "success",
+            text: response.data.message,
+            confirmButtonColor: "#5eba86",
+          });
+          e.target.reset();
+          setDescValue("", "html");
+        }
+        // return response;
       });
 
     // console.log(newUser);
@@ -46,13 +76,18 @@ const AddVideo = () => {
   };
   return (
     <div className="page-wrapper">
-      <Breadcrumb className="breadcrumb-wrapper">
-        <Breadcrumb.Item as={Link} to="admin" className="breadcrumb-item">
-          Dashboard
-        </Breadcrumb.Item>
+      <div className="breadcrumb-wrapper d-flex">
+        <Breadcrumb>
+          <Breadcrumb.Item as={Link} to="admin" className="breadcrumb-item">
+            Dashboard
+          </Breadcrumb.Item>
 
-        <Breadcrumb.Item active>Upload Video</Breadcrumb.Item>
-      </Breadcrumb>
+          <Breadcrumb.Item active>Upload Video</Breadcrumb.Item>
+        </Breadcrumb>
+        <div className="ms-auto breadcrumb-item">
+          <Link to="/admin/all-video">All Video</Link>
+        </div>
+      </div>
 
       <div className="admin-card">
         <div className="admin-card-body">
@@ -113,7 +148,14 @@ const AddVideo = () => {
                     <Form.Label className="label-title fw-bold">
                       Description
                     </Form.Label>
-                    <Form.Control as="textarea" rows={5} ref={videoDesc} />
+                    {/* <Form.Control as="textarea" rows={5} ref={videoDesc} />
+                     */}
+                    <JoditEditor
+                      ref={videoDesc}
+                      config={config}
+                      tabIndex={1}
+                      value={descValue}
+                    />
                   </Form.Group>
                 </Row>
 

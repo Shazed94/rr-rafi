@@ -4,8 +4,8 @@
     padding: 0;
     box-sizing: border-box;
     font-family: Montserrat, sans-serif;
-    text-decoration: none !important;
-    list-style: none;
+    /* text-decoration: none !important; */
+    /* list-style: none; */
 }
 
 /* Page content */
@@ -37,12 +37,19 @@
     font-weight: 700;
 }
 
+.breadcrumb-item a:hover {
+    color: #D6B3AE;
+    ;
+}
+
 .breadcrumb-item+.breadcrumb-item::before {
     float: left;
     padding-right: .5rem;
     color: white !important;
     content: ">" !important;
 }
+
+
 
 /* form design */
 
@@ -54,7 +61,6 @@
     box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
     border-radius: 10px;
 }
-
 
 
 .top-border {
@@ -74,7 +80,7 @@
     font-size: 22px;
 }
 
-.label-title{
+.label-title {
     margin-bottom: 8px;
     font-size: 0.75rem;
     color: #53746e;
@@ -97,6 +103,7 @@
 }
 
 /* Rich Text Editor status Bar Remove */
-.jodit-status-bar{
+.jodit-status-bar {
     visibility: hidden;
+    display: none;
 }
